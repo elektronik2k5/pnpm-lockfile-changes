@@ -3,16 +3,20 @@ on: [pull_request, workflow_dispatch]
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
     permissions:
       pull-requests: write
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6.0.3
+
       - name: NPN Lockfile Changes
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: '[Test] NPM Lockfile Changes Detached Package'
         uses: ./
         with:

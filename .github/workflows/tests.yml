@@ -1,13 +1,24 @@
-name: Run Tests
-on: [pull_request, workflow_dispatch]
+name: Run tests and lint
+
+on:
+  - pull_request
+  - workflow_dispatch
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v6.0.3
+
+      - uses: pnpm/action-setup@v6.0.8
         with:
-          node-version: '16'
-      - run: npm i
-      - run: npm run test
+          version: 11.5.2
+
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 26.3.0
+          cache: pnpm
+
+      - run: pnpm ci
+      - run: pnpm lint
+      - run: pnpm test
