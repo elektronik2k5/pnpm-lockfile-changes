@@ -8,9 +8,9 @@
   "license": "MIT",
   "scripts": {
     "build": "ncc build ./src/action.js -m --target es2021",
-    "lint": "eslint . --ext .js,.jsm",
+    "lint": "eslint . --ext .js,.mjs",
     "optimize": "svgo -f ./assets",
-    "test": "jest",
+    "test": "node --test",
     "prepare": "husky install"
   },
   "lint-staged": {
@@ -25,16 +25,11 @@
     "snyk-nodejs-lockfile-parser": "^1.38.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.9",
-    "@babel/preset-env": "^7.16.11",
     "@vercel/ncc": "^0.33.4",
-    "babel-jest": "^27.5.1",
     "eslint": "^8.13.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-jest": "^26.1.4",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.1",
-    "jest": "^27.5.1",
     "prettier": "^2.6.2",
     "svgo": "^2.8.0"
   }
