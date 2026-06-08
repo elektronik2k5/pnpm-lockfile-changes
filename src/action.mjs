@@ -6,7 +6,7 @@ import { Base64 } from 'js-base64'
 import path from 'path'
 
 import { STATUS, countStatuses, diffLocks } from './utils.mjs'
-import { createTable, createSummary } from './comment.js'
+import { createTable, createSummary } from './comment.mjs'
 
 const packageLockParser = new PackageLockParser()
 

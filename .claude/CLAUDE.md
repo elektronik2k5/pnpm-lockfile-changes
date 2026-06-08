@@ -21,7 +21,7 @@ This is a GitHub Action that posts PR comments summarizing `package-lock.json` c
 
 **`src/utils.js`** — Contains `diffLocks` which compares two parsed lock files and categorizes each package as `ADDED`, `UPDATED`, `DOWNGRADED`, or `REMOVED` using `semver`. This is the core logic.
 
-**`src/comment.js`** — Takes the diff output and generates a markdown table (via `markdown-table`). Collapses the table into a `<details>` block when the number of changes exceeds `collapsibleThreshold`.
+**`src/comment.mjs`** — Takes the diff output and generates a markdown table (via `markdown-table`). Collapses the table into a `<details>` block when the number of changes exceeds `collapsibleThreshold`.
 
 **`dist/index.js`** — Bundled output (ncc inlines all dependencies). This file must be committed; it's what GitHub Actions actually runs. Always rebuild and commit `dist/` when changing source files.
 
