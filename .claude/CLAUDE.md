@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm build        # Bundle src/action.js → dist/index.js via @vercel/ncc (commit dist/ after changes)
+pnpm build        # Bundle src/action.mjs → dist/index.js via @vercel/ncc (commit dist/ after changes)
 pnpm lint         # ESLint across all files
 pnpm test         # Jest unit tests
 pnpm lint && pnpm test  # Full check before committing
@@ -17,7 +17,7 @@ To run a single test file: `pnpm exec jest tests/unit/unit.test.js`
 
 This is a GitHub Action that posts PR comments summarizing `package-lock.json` changes. The three source files map to a clean pipeline:
 
-**`src/action.js`** — Entry point. Fetches the PR's current and base lock files from the GitHub API, calls `diffLocks`, then calls `generateComment` and posts/updates the PR comment via Octokit.
+**`src/action.mjs`** — Entry point. Fetches the PR's current and base lock files from the GitHub API, calls `diffLocks`, then calls `generateComment` and posts/updates the PR comment via Octokit.
 
 **`src/utils.js`** — Contains `diffLocks` which compares two parsed lock files and categorizes each package as `ADDED`, `UPDATED`, `DOWNGRADED`, or `REMOVED` using `semver`. This is the core logic.
 

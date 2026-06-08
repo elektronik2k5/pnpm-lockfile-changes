@@ -1,13 +1,12 @@
-const { debug, getBooleanInput, getInput, setFailed, warning } = require('@actions/core')
-const { context, getOctokit } = require('@actions/github')
-const PackageLockParser =
-  require('snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser').PackageLockParser
-const fs = require('fs')
-const { Base64 } = require('js-base64')
-const path = require('path')
+import { debug, getBooleanInput, getInput, setFailed, warning } from '@actions/core'
+import { context, getOctokit } from '@actions/github'
+import { PackageLockParser } from 'snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser'
+import fs from 'fs'
+import { Base64 } from 'js-base64'
+import path from 'path'
 
-const { STATUS, countStatuses, diffLocks } = require('./utils')
-const { createTable, createSummary } = require('./comment')
+import { STATUS, countStatuses, diffLocks } from './utils.mjs'
+import { createTable, createSummary } from './comment.js'
 
 const packageLockParser = new PackageLockParser()
 

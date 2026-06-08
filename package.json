@@ -7,7 +7,7 @@
   "author": "Christoph Werner <christoph@codepunkt.de>",
   "license": "MIT",
   "scripts": {
-    "build": "ncc build ./src/action.js -m --target es2021",
+    "build": "ncc build ./src/action.mjs -m --target es2021",
     "lint": "eslint . --ext .js,.mjs",
     "optimize": "svgo -f ./assets",
     "test": "node --test",
