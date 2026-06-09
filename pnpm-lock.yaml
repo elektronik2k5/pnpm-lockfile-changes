@@ -17,6 +17,9 @@ importers:
       js-base64:
         specifier: ^3.7.2
         version: 3.7.2
+      js-yaml:
+        specifier: ^4.2.0
+        version: 4.2.0
       markdown-table:
         specifier: ^3.0.2
         version: 3.0.2
@@ -701,8 +704,8 @@ packages:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
     hasBin: true
 
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  js-yaml@4.2.0:
+    resolution: {integrity: sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==}
     hasBin: true
 
   json-buffer@3.0.1:
@@ -1262,7 +1265,7 @@ snapshots:
       globals: 13.14.0
       ignore: 5.2.0
       import-fresh: 3.3.0
-      js-yaml: 4.1.0
+      js-yaml: 4.2.0
       minimatch: 3.1.2
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -1783,7 +1786,7 @@ snapshots:
       import-fresh: 3.3.0
       imurmurhash: 0.1.4
       is-glob: 4.0.3
-      js-yaml: 4.1.0
+      js-yaml: 4.2.0
       json-stable-stringify-without-jsonify: 1.0.1
       levn: 0.4.1
       lodash.merge: 4.6.2
@@ -2005,7 +2008,7 @@ snapshots:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.1.0:
+  js-yaml@4.2.0:
     dependencies:
       argparse: 2.0.1
 
@@ -2340,7 +2343,7 @@ snapshots:
       '@yarnpkg/core': 2.4.0
       '@yarnpkg/lockfile': 1.1.0
       event-loop-spinner: 2.2.0
-      js-yaml: 4.1.0
+      js-yaml: 4.2.0
       lodash.clonedeep: 4.5.0
       lodash.flatmap: 4.5.0
       lodash.isempty: 4.4.0
