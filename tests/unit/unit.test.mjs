@@ -1,13 +1,12 @@
 import { test } from 'node:test'
-import fs from 'node:fs'
-import path from 'node:path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import { parsePnpmLockFile } from '../../src/parser.mjs'
 import { diffLocks, STATUS, countStatuses } from '../../src/utils.mjs'
 import assert from 'node:assert'
 
-const readLock = (filepath) =>
-  fs.readFileSync(path.resolve(process.cwd(), filepath), { encoding: 'utf-8' })
+const readLock = (filepath) => readFileSync(resolve(process.cwd(), filepath), { encoding: 'utf-8' })
 
 test('parses a real pnpm lockfile correctly', () => {
   const { dependencies } = parsePnpmLockFile(readLock('tests/ci/pnpm-lock.yaml'))

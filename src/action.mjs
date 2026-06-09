@@ -109,8 +109,8 @@ async function checkPnpmLockfile() {
       ? await getCommentId(octokit, oktokitParams, number, commentHeader)
       : undefined
 
-    debug(`Bot comment ID: '${commentId}'`)
-    debug(`Lock change count: ${lockChangesCount}`)
+    debug(commentId ? `Found bot commentId: '${commentId}'` : 'No existing bot comment found')
+    debug(`Number of lock changes: ${lockChangesCount}`)
 
     if (lockChangesCount) {
       let diffsTable = createTable(lockChanges)
@@ -137,7 +137,7 @@ async function checkPnpmLockfile() {
 
       if (updateComment) {
         if (commentId) {
-          debug(`Updating existing comment: '${commentId}'`)
+          debug(`Updating existing commentId: '${commentId}'`)
 
           const updateResult = await octokit.rest.issues.updateComment({
             ...oktokitParams,
@@ -145,7 +145,17 @@ async function checkPnpmLockfile() {
             body,
           })
 
-          debug(`Comment update result: '${JSON.stringify(updateResult)}'`)
+          const {
+            data: { body: _body, ...updateResultWithoutBody },
+            ...metadata
+          } = updateResult
+
+          debug(
+            `Comment update result (without body): '${JSON.stringify({
+              ...metadata,
+              data: updateResultWithoutBody,
+            })}'`
+          )
         } else {
           debug('Creating new comment')
 

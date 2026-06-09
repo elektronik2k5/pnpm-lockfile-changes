@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/eslintrc",
   "env": {
     "commonjs": true,
     "es2021": true,
@@ -15,7 +16,8 @@
     "no-var": "error",
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single"],
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
   },
   "ignorePatterns": ["dist", "node_modules"]
 }
