@@ -1,6 +1,6 @@
-const { markdownTable } = require('markdown-table')
+import { markdownTable } from 'markdown-table'
 
-const { STATUS, countStatuses } = require('./utils')
+import { STATUS, countStatuses } from './utils.mjs'
 
 const ASSETS_URL = {
   ADDED: 'https://git.io/J38HP',

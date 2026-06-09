@@ -1,17 +1,14 @@
-const { debug, getBooleanInput, getInput, setFailed, warning } = require('@actions/core')
-const { context, getOctokit } = require('@actions/github')
-const PackageLockParser =
-  require('snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser').PackageLockParser
-const fs = require('fs')
-const { Base64 } = require('js-base64')
-const path = require('path')
+import { debug, getBooleanInput, getInput, setFailed, warning } from '@actions/core'
+import { context, getOctokit } from '@actions/github'
+import { Base64 } from 'js-base64'
+import { existsSync, readFileSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
 
-const { STATUS, countStatuses, diffLocks } = require('./utils')
-const { createTable, createSummary } = require('./comment')
+import { STATUS, countStatuses, diffLocks } from './utils.mjs'
+import { createTable, createSummary } from './comment.mjs'
+import { parsePnpmLockFile } from './parser.mjs'
 
-const packageLockParser = new PackageLockParser()
-
-const getCommentId = async (octokit, oktokitParams, issueNumber, commentHeader) => {
+async function getCommentId(octokit, oktokitParams, issueNumber, commentHeader) {
   const currentComments = await octokit.rest.issues.listComments({
     ...oktokitParams,
     issue_number: issueNumber,
@@ -32,7 +29,7 @@ const getCommentId = async (octokit, oktokitParams, issueNumber, commentHeader) 
 const getBasePathFromInput = (input) =>
   input.lastIndexOf('/') ? input.substring(0, input.lastIndexOf('/')) : ''
 
-const run = async () => {
+async function checkPnpmLockfile() {
   try {
     const octokit = getOctokit(getInput('token', { required: true }))
     const inputPath = getInput('path')
@@ -50,24 +47,24 @@ const run = async () => {
     const { default_branch } = context.payload.repository
 
     const baseBranch = ref || default_branch
-    debug('Base branch: ' + baseBranch)
+    debug(`PR Base branch: '${baseBranch}'`)
 
-    const lockPath = path.resolve(process.cwd(), inputPath)
+    const lockPath = resolve(process.cwd(), inputPath)
 
-    if (!fs.existsSync(lockPath)) {
+    if (!existsSync(lockPath)) {
       throw Error(
         '💥 The code has not been checkout or the lock file does not exist in this PR, aborting!'
       )
     }
 
-    const content = fs.readFileSync(lockPath, { encoding: 'utf8' })
-    const updatedLock = packageLockParser.parseLockFile(content)
+    const content = readFileSync(lockPath, { encoding: 'utf8' })
+    const updatedLock = parsePnpmLockFile(content)
 
     const oktokitParams = { owner, repo }
-    debug('Oktokit params: ' + JSON.stringify(oktokitParams))
+    debug(`Oktokit params: '${JSON.stringify(oktokitParams)}'`)
 
     const basePath = getBasePathFromInput(inputPath)
-    debug('Base lockfile path: ' + basePath)
+    debug(`Base lockfile path: '${basePath}'`)
 
     const baseTree = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{branch}:{path}', {
       ...oktokitParams,
@@ -79,9 +76,20 @@ const run = async () => {
       throw Error('💥 Cannot fetch repository base branch tree, aborting!')
     }
 
-    const baseLockSHA = baseTree.data.tree.filter((file) => file.path === 'package-lock.json')[0]
-      .sha
-    debug('Base lockfile SHA: ' + baseLockSHA)
+    debug(JSON.stringify(baseTree.data.tree))
+
+    const inputBaseName = basename(inputPath)
+
+    debug(`Looking for base lockfile '${inputBaseName}' in path '${basePath}'`)
+
+    const [maybeBasePnpmLockFile] = baseTree.data.tree.filter((file) => file.path === inputBaseName)
+
+    if (!maybeBasePnpmLockFile) {
+      throw Error(`💥 Cannot find the base lock file '${inputPath}' in the repository, aborting!`)
+    }
+
+    const baseLockSHA = maybeBasePnpmLockFile.sha
+    debug(`Base lockfile '${inputPath}' SHA: '${baseLockSHA}'`)
 
     const baseLockData = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
       ...oktokitParams,
@@ -89,10 +97,10 @@ const run = async () => {
     })
 
     if (!baseLockData || !baseLockData.data || !baseLockData.data.content) {
-      throw Error('💥 Cannot fetch repository base lock file, aborting!')
+      throw Error(`💥 Cannot fetch repository base lock file '${inputPath}', aborting!`)
     }
 
-    const baseLock = packageLockParser.parseLockFile(Base64.decode(baseLockData.data.content))
+    const baseLock = parsePnpmLockFile(Base64.decode(baseLockData.data.content))
     const lockChanges = diffLocks(baseLock, updatedLock)
     const lockChangesCount = Object.keys(lockChanges).length
 
@@ -100,12 +108,14 @@ const run = async () => {
     const commentId = updateComment
       ? await getCommentId(octokit, oktokitParams, number, commentHeader)
       : undefined
-    debug('Bot comment ID: ' + commentId)
+
+    debug(commentId ? `Found bot commentId: '${commentId}'` : 'No existing bot comment found')
+    debug(`Number of lock changes: ${lockChangesCount}`)
 
     if (lockChangesCount) {
       let diffsTable = createTable(lockChanges)
 
-      if (diffsTable.length >= 64000) {
+      if (diffsTable.length >= 64_000) {
         diffsTable = createTable(lockChanges, true)
       }
 
@@ -127,31 +137,57 @@ const run = async () => {
 
       if (updateComment) {
         if (commentId) {
-          await octokit.rest.issues.updateComment({
+          debug(`Updating existing commentId: '${commentId}'`)
+
+          const updateResult = await octokit.rest.issues.updateComment({
             ...oktokitParams,
             comment_id: commentId,
             body,
           })
+
+          const {
+            data: { body: _body, ...updateResultWithoutBody },
+            ...metadata
+          } = updateResult
+
+          debug(
+            `Comment update result (without body): '${JSON.stringify({
+              ...metadata,
+              data: updateResultWithoutBody,
+            })}'`
+          )
         } else {
-          await octokit.rest.issues.createComment({
+          debug('Creating new comment')
+
+          const createResult = await octokit.rest.issues.createComment({
             ...oktokitParams,
             issue_number: number,
             body,
           })
+
+          debug(`Comment create result: '${JSON.stringify(createResult)}'`)
         }
       } else {
-        await octokit.rest.issues.createComment({
+        debug('Creating new comment')
+
+        const createResult = await octokit.rest.issues.createComment({
           ...oktokitParams,
           issue_number: number,
           body,
         })
+
+        debug(`Comment create result: '${JSON.stringify(createResult)}'`)
       }
     } else {
       if (updateComment && commentId) {
-        await octokit.rest.issues.deleteComment({
+        debug('No changes found, deleting comment')
+
+        const deleteResult = await octokit.rest.issues.deleteComment({
           ...oktokitParams,
           comment_id: commentId,
         })
+
+        debug(`Comment delete result: '${JSON.stringify(deleteResult)}'`)
       }
     }
 
@@ -167,4 +203,4 @@ const run = async () => {
   }
 }
 
-run()
+checkPnpmLockfile()
