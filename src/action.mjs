@@ -1,16 +1,14 @@
 import { debug, getBooleanInput, getInput, setFailed, warning } from '@actions/core'
 import { context, getOctokit } from '@actions/github'
-import { PackageLockParser } from 'snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser.js'
 import fs from 'node:fs'
 import { Base64 } from 'js-base64'
 import path from 'node:path'
 
 import { STATUS, countStatuses, diffLocks } from './utils.mjs'
 import { createTable, createSummary } from './comment.mjs'
+import { parsePnpmLockFile } from './parser.mjs'
 
-const packageLockParser = new PackageLockParser()
-
-const getCommentId = async (octokit, oktokitParams, issueNumber, commentHeader) => {
+async function getCommentId(octokit, oktokitParams, issueNumber, commentHeader) {
   const currentComments = await octokit.rest.issues.listComments({
     ...oktokitParams,
     issue_number: issueNumber,
@@ -31,7 +29,7 @@ const getCommentId = async (octokit, oktokitParams, issueNumber, commentHeader) 
 const getBasePathFromInput = (input) =>
   input.lastIndexOf('/') ? input.substring(0, input.lastIndexOf('/')) : ''
 
-const run = async () => {
+async function run() {
   try {
     const octokit = getOctokit(getInput('token', { required: true }))
     const inputPath = getInput('path')
@@ -60,7 +58,7 @@ const run = async () => {
     }
 
     const content = fs.readFileSync(lockPath, { encoding: 'utf8' })
-    const updatedLock = packageLockParser.parseLockFile(content)
+    const updatedLock = parsePnpmLockFile(content)
 
     const oktokitParams = { owner, repo }
     debug('Oktokit params: ' + JSON.stringify(oktokitParams))
@@ -90,7 +88,7 @@ const run = async () => {
       throw Error('💥 Cannot fetch repository base lock file, aborting!')
     }
 
-    const baseLock = packageLockParser.parseLockFile(Base64.decode(baseLockData.data.content))
+    const baseLock = parsePnpmLockFile(Base64.decode(baseLockData.data.content))
     const lockChanges = diffLocks(baseLock, updatedLock)
     const lockChangesCount = Object.keys(lockChanges).length
 
@@ -103,7 +101,7 @@ const run = async () => {
     if (lockChangesCount) {
       let diffsTable = createTable(lockChanges)
 
-      if (diffsTable.length >= 64000) {
+      if (diffsTable.length >= 64_000) {
         diffsTable = createTable(lockChanges, true)
       }
 
