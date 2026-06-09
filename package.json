@@ -9,6 +9,8 @@
   "license": "MIT",
   "scripts": {
     "action": "node src/action.mjs",
+    "format": "prettier --write",
+    "format:all": "prettier --write .",
     "lint": "eslint . --ext .js,.mjs",
     "optimize": "svgo -f ./assets",
     "test": "node --test",
@@ -16,7 +18,8 @@
     "lint-staged": "lint-staged"
   },
   "lint-staged": {
-    "*.mjs": "pnpm lint"
+    "*.mjs": "pnpm lint",
+    "*": "pnpm format"
   },
   "dependencies": {
     "@actions/core": "^1.6.0",
