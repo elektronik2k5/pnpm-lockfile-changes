@@ -47,7 +47,7 @@ async function run() {
     const { default_branch } = context.payload.repository
 
     const baseBranch = ref || default_branch
-    debug('Base branch: ' + baseBranch)
+    debug(`PR Base branch: '${baseBranch}'`)
 
     const lockPath = path.resolve(process.cwd(), inputPath)
 
@@ -61,10 +61,10 @@ async function run() {
     const updatedLock = parsePnpmLockFile(content)
 
     const oktokitParams = { owner, repo }
-    debug('Oktokit params: ' + JSON.stringify(oktokitParams))
+    debug(`Oktokit params: '${JSON.stringify(oktokitParams)}'`)
 
     const basePath = getBasePathFromInput(inputPath)
-    debug('Base lockfile path: ' + basePath)
+    debug(`Base lockfile path: '${basePath}'`)
 
     const baseTree = await octokit.request('GET /repos/{owner}/{repo}/git/trees/{branch}:{path}', {
       ...oktokitParams,
@@ -76,8 +76,10 @@ async function run() {
       throw Error('💥 Cannot fetch repository base branch tree, aborting!')
     }
 
+    debug(JSON.stringify(baseTree.data.tree))
+
     const baseLockSHA = baseTree.data.tree.filter((file) => file.path === 'pnpm-lock.yaml')[0].sha
-    debug('Base lockfile SHA: ' + baseLockSHA)
+    debug(`Base lockfile SHA: '${baseLockSHA}'`)
 
     const baseLockData = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
       ...oktokitParams,
@@ -96,7 +98,8 @@ async function run() {
     const commentId = updateComment
       ? await getCommentId(octokit, oktokitParams, number, commentHeader)
       : undefined
-    debug('Bot comment ID: ' + commentId)
+
+    debug(`Bot comment ID: '${commentId}'`)
 
     if (lockChangesCount) {
       let diffsTable = createTable(lockChanges)

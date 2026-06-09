@@ -1,4 +1,4 @@
-# NPM Lockfile Changes
+# PNPM Lockfile Changes
 
 [<sub><img src="https://git.io/J38HP" height="16" /></sub>](#) [<sub><img src="https://git.io/J38dY" height="16" /></sub>](#) [<sub><img src="https://git.io/J38ds" height="16" /></sub>](#) [<sub><img src="https://git.io/J38dt" height="16" /></sub>](#)
 

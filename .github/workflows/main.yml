@@ -1,5 +1,7 @@
-name: NPM Lockfile Changes
-on: [pull_request, workflow_dispatch]
+name: PNPM Lockfile Changes
+on:
+  - pull_request
+  - workflow_dispatch
 
 jobs:
   check:
@@ -23,14 +25,13 @@ jobs:
 
       - run: pnpm ci
 
-      - name: NPM Lockfile Changes
+      - name: PNPM Lockfile Changes
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: pnpm-lock.yaml
           updateComment: 'true'
 
-      - name: '[Test] NPM Lockfile Changes Detached Package'
+      - name: '[Test] PNPM Lockfile Changes Detached Package'
         uses: ./
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
