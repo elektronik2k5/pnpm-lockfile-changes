@@ -29,7 +29,7 @@ async function getCommentId(octokit, oktokitParams, issueNumber, commentHeader) 
 const getBasePathFromInput = (input) =>
   input.lastIndexOf('/') ? input.substring(0, input.lastIndexOf('/')) : ''
 
-async function run() {
+async function checkPnpmLockfile() {
   try {
     const octokit = getOctokit(getInput('token', { required: true }))
     const inputPath = getInput('path')
@@ -78,8 +78,14 @@ async function run() {
 
     debug(JSON.stringify(baseTree.data.tree))
 
-    const baseLockSHA = baseTree.data.tree.filter((file) => file.path === 'pnpm-lock.yaml')[0].sha
-    debug(`Base lockfile SHA: '${baseLockSHA}'`)
+    const [maybeBasePnpmLockFile] = baseTree.data.tree.filter((file) => file.path === inputPath)
+
+    if (!maybeBasePnpmLockFile) {
+      throw Error('💥 Cannot find the base lock file in the repository, aborting!')
+    }
+
+    const baseLockSHA = maybeBasePnpmLockFile.sha
+    debug(`Base lockfile '${inputPath}' SHA: '${baseLockSHA}'`)
 
     const baseLockData = await octokit.request('GET /repos/{owner}/{repo}/git/blobs/{file_sha}', {
       ...oktokitParams,
@@ -100,6 +106,7 @@ async function run() {
       : undefined
 
     debug(`Bot comment ID: '${commentId}'`)
+    debug(`Lock change count: ${lockChangesCount}`)
 
     if (lockChangesCount) {
       let diffsTable = createTable(lockChanges)
@@ -126,31 +133,47 @@ async function run() {
 
       if (updateComment) {
         if (commentId) {
-          await octokit.rest.issues.updateComment({
+          debug(`Updating existing comment: '${commentId}'`)
+
+          const updateResult = await octokit.rest.issues.updateComment({
             ...oktokitParams,
             comment_id: commentId,
             body,
           })
+
+          debug(`Comment update result: '${JSON.stringify(updateResult)}'`)
         } else {
-          await octokit.rest.issues.createComment({
+          debug('Creating new comment')
+
+          const createResult = await octokit.rest.issues.createComment({
             ...oktokitParams,
             issue_number: number,
             body,
           })
+
+          debug(`Comment create result: '${JSON.stringify(createResult)}'`)
         }
       } else {
-        await octokit.rest.issues.createComment({
+        debug('Creating new comment')
+
+        const createResult = await octokit.rest.issues.createComment({
           ...oktokitParams,
           issue_number: number,
           body,
         })
+
+        debug(`Comment create result: '${JSON.stringify(createResult)}'`)
       }
     } else {
       if (updateComment && commentId) {
-        await octokit.rest.issues.deleteComment({
+        debug('No changes found, deleting comment')
+
+        const deleteResult = await octokit.rest.issues.deleteComment({
           ...oktokitParams,
           comment_id: commentId,
         })
+
+        debug(`Comment delete result: '${JSON.stringify(deleteResult)}'`)
       }
     }
 
@@ -166,4 +189,4 @@ async function run() {
   }
 }
 
-run()
+checkPnpmLockfile()
