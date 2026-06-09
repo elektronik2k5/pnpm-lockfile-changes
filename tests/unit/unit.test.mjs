@@ -16,7 +16,7 @@ test('parses a real pnpm lockfile correctly', () => {
   assert.equal(dependencies.lodash.version, '4.18.1')
 })
 
-test('calculating the diff of two lockfiles works', () => {
+test('calculating the diff of two lock files works', () => {
   const result = diffLocks(
     parsePnpmLockFile(readLock('tests/ci/pnpm-lock.yaml')),
     parsePnpmLockFile(readLock('tests/unit/downgrade/b.yaml'))

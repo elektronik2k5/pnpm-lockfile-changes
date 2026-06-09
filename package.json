@@ -1,20 +1,22 @@
 {
   "name": "@codepunkt/npm-lockfile-changes",
   "version": "1.0.0",
+  "type": "module",
   "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916",
-  "main": "dist/index.js",
+  "main": "src/action.mjs",
   "repository": "github:codepunkt/npm-lockfile-changes",
   "author": "Christoph Werner <christoph@codepunkt.de>",
   "license": "MIT",
   "scripts": {
-    "build": "ncc build ./src/action.mjs -m --target es2021",
+    "action": "node src/action.mjs",
     "lint": "eslint . --ext .js,.mjs",
     "optimize": "svgo -f ./assets",
     "test": "node --test",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint-staged": "lint-staged"
   },
   "lint-staged": {
-    "*": "pnpm build"
+    "*.mjs": "pnpm lint"
   },
   "dependencies": {
     "@actions/core": "^1.6.0",
@@ -25,11 +27,11 @@
     "snyk-nodejs-lockfile-parser": "^1.38.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.33.4",
     "eslint": "^8.13.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.1",
+    "lint-staged": "^13.0.0",
     "prettier": "^2.6.2",
     "svgo": "^2.8.0"
   }

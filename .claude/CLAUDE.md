@@ -5,13 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm build        # Bundle src/action.mjs → dist/index.js via @vercel/ncc (commit dist/ after changes)
+pnpm action       # Run the action locally (requires env vars set)
 pnpm lint         # ESLint across all files
-pnpm test         # Jest unit tests
-pnpm lint && pnpm test  # Full check before committing
+pnpm test         # Node test runner
+pnpm lint && pnpm test  # Full check
 ```
 
-To run a single test file: `pnpm exec jest tests/unit/unit.test.js`
+To run a single test file: `node --test tests/unit/unit.test.mjs`
 
 ## Architecture
 
@@ -23,11 +23,11 @@ This is a GitHub Action that posts PR comments summarizing `package-lock.json` c
 
 **`src/comment.mjs`** — Takes the diff output and generates a markdown table (via `markdown-table`). Collapses the table into a `<details>` block when the number of changes exceeds `collapsibleThreshold`.
 
-**`dist/index.js`** — Bundled output (ncc inlines all dependencies). This file must be committed; it's what GitHub Actions actually runs. Always rebuild and commit `dist/` when changing source files.
+**`action.yml`** — Declares the action as `using: node24`, pointing directly to `src/action.mjs`. No bundling required; `node_modules` must be present (installed via `pnpm install --prod` in the workflow before the action runs).
 
 ## Key Details
 
-- **Input parameters** are defined in `action.yml`: `token`, `path` (default: `package-lock.json`), `collapsibleThreshold` (default: 25), `failOnDowngrade`, `updateComment`.
+- **Input parameters** are defined in `action.yml`: `token`, `path` (default: `pnpm-lock.yaml`), `collapsibleThreshold` (default: 25), `failOnDowngrade`, `updateComment`. When running via `pnpm run action` (in CI or locally), set these as `INPUT_*` env vars since `action.yml` defaults are not applied.
 - **Lock file parsing** uses `snyk-nodejs-lockfile-parser`; base lock file content arrives as a base64 blob from the GitHub API and is decoded via `js-base64`.
-- **CI** runs `pnpm lint` + `pnpm test` on PRs (`.github/workflows/tests.yml`) and also runs the action against itself to test end-to-end behavior (`.github/workflows/main.yml`).
+- **CI** runs `pnpm lint` + `pnpm test` on PRs (`.github/workflows/tests.yml`). End-to-end testing runs via `pnpm run action` in `.github/workflows/main.yml` after `pnpm ci --prod`.
 - **Code style**: Prettier-enforced, 100-char print width, single quotes, no semicolons, 2-space indent. ESLint extends `eslint:recommended` with the Jest plugin.

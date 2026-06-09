@@ -1,9 +1,9 @@
 import { debug, getBooleanInput, getInput, setFailed, warning } from '@actions/core'
 import { context, getOctokit } from '@actions/github'
-import { PackageLockParser } from 'snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser'
-import fs from 'fs'
+import { PackageLockParser } from 'snyk-nodejs-lockfile-parser/dist/parsers/package-lock-parser.js'
+import fs from 'node:fs'
 import { Base64 } from 'js-base64'
-import path from 'path'
+import path from 'node:path'
 
 import { STATUS, countStatuses, diffLocks } from './utils.mjs'
 import { createTable, createSummary } from './comment.mjs'
