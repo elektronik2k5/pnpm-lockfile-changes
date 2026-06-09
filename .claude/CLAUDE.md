@@ -23,11 +23,11 @@ This is a GitHub Action that posts PR comments summarizing `package-lock.json` c
 
 **`src/comment.mjs`** — Takes the diff output and generates a markdown table (via `markdown-table`). Collapses the table into a `<details>` block when the number of changes exceeds `collapsibleThreshold`.
 
-**`action.yml`** — Declares the action as `using: node24`, pointing directly to `src/action.mjs`. No bundling required; `node_modules` must be present (installed via `pnpm install --prod` in the workflow before the action runs).
+**`action.yml`** — Declares the action as `using: node24`, pointing directly to `src/action.mjs`. No bundling required; `node_modules` must be present (installed via `pnpm ci` in the workflow before the action runs).
 
 ## Key Details
 
 - **Input parameters** are defined in `action.yml`: `token`, `path` (default: `pnpm-lock.yaml`), `collapsibleThreshold` (default: 25), `failOnDowngrade`, `updateComment`. When running via `pnpm run action` (in CI or locally), set these as `INPUT_*` env vars since `action.yml` defaults are not applied.
 - **Lock file parsing** uses `snyk-nodejs-lockfile-parser`; base lock file content arrives as a base64 blob from the GitHub API and is decoded via `js-base64`.
-- **CI** runs `pnpm lint` + `pnpm test` on PRs (`.github/workflows/tests.yml`). End-to-end testing runs via `pnpm run action` in `.github/workflows/main.yml` after `pnpm ci --prod`.
+- **CI** runs `pnpm lint` + `pnpm test` on PRs (`.github/workflows/tests.yml`). End-to-end testing runs via `pnpm run action` in `.github/workflows/main.yml` after `pnpm ci`.
 - **Code style**: Prettier-enforced, 100-char print width, single quotes, no semicolons, 2-space indent. ESLint extends `eslint:recommended` with the Jest plugin.
