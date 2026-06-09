@@ -1,8 +1,8 @@
 import { debug, getBooleanInput, getInput, setFailed, warning } from '@actions/core'
 import { context, getOctokit } from '@actions/github'
-import fs from 'node:fs'
 import { Base64 } from 'js-base64'
-import path from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
 
 import { STATUS, countStatuses, diffLocks } from './utils.mjs'
 import { createTable, createSummary } from './comment.mjs'
@@ -49,15 +49,15 @@ async function checkPnpmLockfile() {
     const baseBranch = ref || default_branch
     debug(`PR Base branch: '${baseBranch}'`)
 
-    const lockPath = path.resolve(process.cwd(), inputPath)
+    const lockPath = resolve(process.cwd(), inputPath)
 
-    if (!fs.existsSync(lockPath)) {
+    if (!existsSync(lockPath)) {
       throw Error(
         '💥 The code has not been checkout or the lock file does not exist in this PR, aborting!'
       )
     }
 
-    const content = fs.readFileSync(lockPath, { encoding: 'utf8' })
+    const content = readFileSync(lockPath, { encoding: 'utf8' })
     const updatedLock = parsePnpmLockFile(content)
 
     const oktokitParams = { owner, repo }
@@ -78,10 +78,14 @@ async function checkPnpmLockfile() {
 
     debug(JSON.stringify(baseTree.data.tree))
 
-    const [maybeBasePnpmLockFile] = baseTree.data.tree.filter((file) => file.path === inputPath)
+    const inputBaseName = basename(inputPath)
+
+    debug(`Looking for base lockfile '${inputBaseName}' in path '${basePath}'`)
+
+    const [maybeBasePnpmLockFile] = baseTree.data.tree.filter((file) => file.path === inputBaseName)
 
     if (!maybeBasePnpmLockFile) {
-      throw Error('💥 Cannot find the base lock file in the repository, aborting!')
+      throw Error(`💥 Cannot find the base lock file '${inputPath}' in the repository, aborting!`)
     }
 
     const baseLockSHA = maybeBasePnpmLockFile.sha
@@ -93,7 +97,7 @@ async function checkPnpmLockfile() {
     })
 
     if (!baseLockData || !baseLockData.data || !baseLockData.data.content) {
-      throw Error('💥 Cannot fetch repository base lock file, aborting!')
+      throw Error(`💥 Cannot fetch repository base lock file '${inputPath}', aborting!`)
     }
 
     const baseLock = parsePnpmLockFile(Base64.decode(baseLockData.data.content))
