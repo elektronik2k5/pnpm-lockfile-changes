@@ -4,7 +4,7 @@ on:
   - workflow_dispatch
 
 jobs:
-  check:
+  lockfile-changes:
     runs-on: ubuntu-24.04
 
     permissions:
