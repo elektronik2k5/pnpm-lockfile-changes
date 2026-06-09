@@ -1,6 +1,6 @@
-name: 'NPM Lockfile Changes'
+name: 'PNPM Lockfile Changes'
 
-description: 'Creates a comment inside Pull Request with the human-readable summary of the changes to the "package-lock.json" file.'
+description: 'Creates a comment inside Pull Request with the human-readable summary of the changes to the "pnpm-lock.yaml" file.'
 
 branding:
   icon: 'copy'

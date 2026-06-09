@@ -15,7 +15,7 @@ To run a single test file: `node --test tests/unit/unit.test.mjs`
 
 ## Architecture
 
-This is a GitHub Action that posts PR comments summarizing `package-lock.json` changes. The three source files map to a clean pipeline:
+This is a GitHub Action that posts PR comments summarizing `pnpm-lock.yaml` changes. The three source files map to a clean pipeline:
 
 **`src/action.mjs`** — Entry point. Fetches the PR's current and base lock files from the GitHub API, calls `diffLocks`, then calls `generateComment` and posts/updates the PR comment via Octokit.
 
@@ -30,4 +30,3 @@ This is a GitHub Action that posts PR comments summarizing `package-lock.json` c
 - **Input parameters** are defined in `action.yml`: `token`, `path` (default: `pnpm-lock.yaml`), `collapsibleThreshold` (default: 25), `failOnDowngrade`, `updateComment`. When running via `pnpm run action` (in CI or locally), set these as `INPUT_*` env vars since `action.yml` defaults are not applied.
 - **Lock file parsing** uses `snyk-nodejs-lockfile-parser`; base lock file content arrives as a base64 blob from the GitHub API and is decoded via `js-base64`.
 - **CI** runs `pnpm lint` + `pnpm test` on PRs (`.github/workflows/tests.yml`). End-to-end testing runs via `pnpm run action` in `.github/workflows/main.yml` after `pnpm ci`.
-- **Code style**: Prettier-enforced, 100-char print width, single quotes, no semicolons, 2-space indent. ESLint extends `eslint:recommended` with the Jest plugin.
